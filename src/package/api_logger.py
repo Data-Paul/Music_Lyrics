@@ -21,6 +21,10 @@ class MusicBrainzAPI:
         self.session = requests.Session()
         self.session.headers.update(self.HEADERS)
 
+
+# _make_request ist eine private Methode, die verwendet wird, um Anfragen an die MusicBrainz API zu stellen.
+# endpoint ist der letzte Teil der URL, der für die Anfrage verwendet wird.
+# params ist ein optionales Dictionary mit Parametern, die in der Anfrage übergeben werden.
     def _make_request(self, endpoint: str, params: Optional[Dict] = None) -> Optional[Dict]:
         """
         Sendet eine Anfrage an die MusicBrainz API mit Rate-Limiting.
