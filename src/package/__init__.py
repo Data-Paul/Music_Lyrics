@@ -1,0 +1,3 @@
+"""
+MusicBrainz API package initialization.
+""" 
