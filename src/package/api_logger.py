@@ -21,17 +21,19 @@ class MusicBrainzAPI:
         self.session = requests.Session()
         self.session.headers.update(self.HEADERS)
 
-
-# _make_request ist eine private Methode, die verwendet wird, um Anfragen an die MusicBrainz API zu stellen.
-# endpoint ist der letzte Teil der URL, der für die Anfrage verwendet wird.
-# params ist ein optionales Dictionary mit Parametern, die in der Anfrage übergeben werden.
     def _make_request(self, endpoint: str, params: Optional[Dict] = None) -> Optional[Dict]:
         """
-        Sendet eine Anfrage an die MusicBrainz API mit Rate-Limiting.
-        Diese Methode wird intern von allen anderen Methoden verwendet.
+        Sends a request to the MusicBrainz API with rate limiting.
+        This method is used internally by all other methods.
+        
+        Args:
+            endpoint (str): The API endpoint to call
+            params (Optional[Dict]): Optional parameters for the request
+            
+        Returns:
+            Optional[Dict]: JSON response if successful, None otherwise
         """
         try:
-            # Führt die GET-Anfrage aus
             response = self.session.get(f"{self.BASE_URL}{endpoint}", params=params)
             
             # Erfolgreiche Anfrage
@@ -40,7 +42,7 @@ class MusicBrainzAPI:
             # Rate-Limit überschritten, warte und versuche es erneut
             elif response.status_code == 503:
                 print(f"Rate limit exceeded. Waiting before retry...")
-                time.sleep(1)  # Wait 1 second before retry
+                time.sleep(1)
                 return self._make_request(endpoint, params)
             # Andere Fehler
             else:
@@ -50,34 +52,51 @@ class MusicBrainzAPI:
             print(f"Request error: {e}")
             return None
 
-    def get_genres(self, limit: int = 100, offset: int = 0) -> Optional[List[Dict]]:
-        """Get a list of all genres."""
-        return self._make_request("genre/all", {"limit": limit, "offset": offset})
-
     def get_artists_by_genre(self, genre: str, limit: int = 100, offset: int = 0) -> Optional[List[Dict]]:
-        """Sucht Künstler nach Genre."""
+        """
+        Retrieves artists by genre with basic information needed for database storage.
+        
+        Args:
+            genre (str): Genre to search for
+            limit (int): Maximum number of results
+            offset (int): Starting position for pagination
+            
+        Returns:
+            Optional[List[Dict]]: List of artists with ID, name, and genre information
+        """
         return self._make_request("artist", {
-            "query": f"genre:{genre}",  # Sucht Künstler mit diesem Genre
-            "limit": limit,             # Maximale Anzahl der Ergebnisse
-            "offset": offset            # Startposition für Paginierung
-        })
-
-    def get_release_groups(self, artist_id: str, limit: int = 100, offset: int = 0) -> Optional[List[Dict]]:
-        """Holt alle Veröffentlichungsgruppen eines Künstlers."""
-        return self._make_request("release-group", {
-            "artist": artist_id,  # MusicBrainz ID des Künstlers
+            "query": f"genre:{genre}",
             "limit": limit,
             "offset": offset
         })
 
-    def get_recordings(self, release_id: str, limit: int = 100, offset: int = 0) -> Optional[List[Dict]]:
-        """Holt alle Aufnahmen einer Veröffentlichung."""
+    def get_artist_recordings(self, artist_id: str, limit: int = 100, offset: int = 0) -> Optional[List[Dict]]:
+        """
+        Retrieves all recordings by an artist with minimal required information.
+        
+        Args:
+            artist_id (str): MusicBrainz ID of the artist
+            limit (int): Maximum number of results
+            offset (int): Starting position for pagination
+            
+        Returns:
+            Optional[List[Dict]]: List of recordings with ID, title, and artist information
+        """
         return self._make_request("recording", {
-            "release": release_id,  # MusicBrainz ID der Veröffentlichung
+            "artist": artist_id,
             "limit": limit,
             "offset": offset
         })
 
-    def get_artist_details(self, artist_id: str) -> Optional[Dict]:
-        """Holt detaillierte Informationen über einen Künstler."""
-        return self._make_request(f"artist/{artist_id}", {"inc": "releases"}) 
+    def get_genres(self, limit: int = 100, offset: int = 0) -> Optional[List[Dict]]:
+        """
+        Retrieves a list of all available genres.
+        
+        Args:
+            limit (int): Maximum number of results
+            offset (int): Starting position for pagination
+            
+        Returns:
+            Optional[List[Dict]]: List of genres with ID and name
+        """
+        return self._make_request("genre/all", {"limit": limit, "offset": offset}) 
