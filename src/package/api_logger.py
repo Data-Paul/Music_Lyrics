@@ -5,7 +5,11 @@ This module provides functions to fetch and process MusicBrainz API data.
 
 import requests
 import time
+import logging
 from typing import Dict, List, Optional
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 class MusicBrainzAPI:
     # Basis-URL für alle API-Anfragen
@@ -41,15 +45,15 @@ class MusicBrainzAPI:
                 return response.json()
             # Rate-Limit überschritten, warte und versuche es erneut
             elif response.status_code == 503:
-                print(f"Rate limit exceeded. Waiting before retry...")
+                logger.warning("Rate limit exceeded. Waiting before retry...")
                 time.sleep(1)
                 return self._make_request(endpoint, params)
             # Andere Fehler
             else:
-                print(f"Error: Status code {response.status_code}")
+                logger.error(f"API request failed with status code {response.status_code}")
                 return None
         except requests.exceptions.RequestException as e:
-            print(f"Request error: {e}")
+            logger.error(f"Request error: {e}")
             return None
 
     def get_artists_by_genre(self, genre: str, limit: int = 100, offset: int = 0) -> Optional[List[Dict]]:
@@ -64,6 +68,7 @@ class MusicBrainzAPI:
         Returns:
             Optional[List[Dict]]: List of artists with ID, name, and genre information
         """
+        logger.debug(f"Fetching artists for genre: {genre}")
         return self._make_request("artist", {
             "query": f"genre:{genre}",
             "limit": limit,
@@ -82,6 +87,7 @@ class MusicBrainzAPI:
         Returns:
             Optional[List[Dict]]: List of recordings with ID, title, and artist information
         """
+        logger.debug(f"Fetching recordings for artist: {artist_id}")
         return self._make_request("recording", {
             "artist": artist_id,
             "limit": limit,
@@ -99,4 +105,5 @@ class MusicBrainzAPI:
         Returns:
             Optional[List[Dict]]: List of genres with ID and name
         """
+        logger.debug("Fetching all available genres")
         return self._make_request("genre/all", {"limit": limit, "offset": offset}) 
