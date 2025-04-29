@@ -1,12 +1,29 @@
-FROM postgres:15-alpine
+# Basis-Image mit Python 3.9 (schlanke Version)
+FROM python:3.9-slim
 
-# Copy initialization script
-COPY src/package/database/init.sql /docker-entrypoint-initdb.d/
+# Arbeitsverzeichnis im Container festlegen
+WORKDIR /app
 
-# Set environment variables
-ENV POSTGRES_USER=postgres
-ENV POSTGRES_PASSWORD=postgres
-ENV POSTGRES_DB=music_db
+# Systemabhängigkeiten installieren
+RUN apt-get update \
+    # libpq-dev wird für PostgreSQL-Client-Bibliotheken benötigt
+    && apt-get -y install libpq-dev gcc \
+    # pip auf die neueste Version aktualisieren
+    && pip install --upgrade pip \
+    # PostgreSQL-Adapter für Python installieren
+    && pip install psycopg2-binary
 
-# Expose PostgreSQL port
-EXPOSE 5432 
+# Paketverzeichnis erstellen
+RUN mkdir -p /app/package
+
+# Anwendungscode in den Container kopieren
+COPY src/package/*.py /app/package/
+COPY src/package/database /app/package/database
+
+# Umgebungsvariablen setzen
+ENV PYTHONPATH=/app
+# Standard-Datenbankverbindungs-URL
+ENV DATABASE_URL=postgresql://postgres:postgres@db:5432/music_db
+
+# Container am Laufen halten (für Entwicklung)
+CMD ["tail", "-f", "/dev/null"] 

@@ -1,22 +1,45 @@
-version: '3.8'
-
 services:
-  db:
+  # Web-Service für die Python-Anwendung
+  web:
     build: .
     container_name: music_db
+    # Port-Mapping: Host-Port 5000 -> Container-Port 5000
+    ports:
+      - "5000:5000"
+    # Volume-Mapping: Lokales src-Verzeichnis -> /app im Container
+    volumes:
+      - ./src:/app
+    # Abhängigkeit: Datenbank muss zuerst starten
+    depends_on:
+      - db
+    # Umgebungsvariablen für die Datenbankverbindung
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/music_db
+
+  # PostgreSQL-Datenbank-Service
+  db:
+    image: postgres:15
+    # Datenbank-Konfiguration über Umgebungsvariablen
+    environment:
+      - POSTGRES_DB=music_db        # Datenbankname
+      - POSTGRES_USER=postgres      # Datenbankbenutzer
+      - POSTGRES_PASSWORD=postgres  # Datenbankpasswort
+      - LANG=en_US.utf8            # Spracheinstellung
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8  # UTF8-Kodierung für die Datenbank
+    # Volumes für persistente Daten und Initialisierungsskripte
+    volumes:
+      - ./src/package/database:/docker-entrypoint-initdb.d  # SQL-Skripte für DB-Initialisierung
+      - postgres_data:/var/lib/postgresql/data             # Persistente Daten
+    # Port-Mapping für direkten Datenbankzugriff
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=music_db
+    # Healthcheck: Prüft alle 5 Sekunden, ob die DB bereit ist
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
 
+# Definition des persistenten Volumes für die Datenbank
 volumes:
   postgres_data: 
