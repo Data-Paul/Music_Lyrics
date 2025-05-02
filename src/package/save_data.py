@@ -1,14 +1,14 @@
 """
-Modul zum Speichern von Daten aus API und Web-Scraping in der Datenbank.
-Dieses Modul stellt Funktionen zum Speichern und Verwalten von Musikdaten in PostgreSQL bereit.
+Module for saving data from API and web scraping to the database.
+This module provides functions to save and manage music data in PostgreSQL.
 """
 
 import psycopg2
 from psycopg2.extras import Json
 import logging
 from typing import Dict, List, Optional, Tuple
-from src.package.api_logger import MusicBrainzAPI
-from src.package.web_logger import scrape_lyrics
+from .api_logger import MusicBrainzAPI
+from .web_logger import scrape_lyrics
 import sys
 import json
 
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class DatabaseManager:
     def __init__(self, dbname: str = "music_db", user: str = "postgres", 
-                 password: str = "postgres", host: str = "localhost", port: str = "8880"):
+                 password: str = "postgres", host: str = "db", port: str = "5432"):
         """
         Initialize database connection.
         
@@ -45,20 +45,22 @@ class DatabaseManager:
             "client_encoding": "UTF8"  # UTF8-Kodierung für die Verbindung
         }
         self.api = MusicBrainzAPI()
-        logger.info(f"DatabaseManager initialisiert mit Parametern: {self.conn_params}")
+        logger.info(f"DatabaseManager initialized with parameters: {self.conn_params}")
 
     def connect(self):
-        """Establish database connection."""
+        """
+        Establish database connection.
+        """
         try:
-            logger.info("Versuche Verbindung zur Datenbank herzustellen...")
+            logger.info("Attempting to establish database connection...")
 
             # UTF-8-Test für alle Verbindungsparameter
             for key, value in self.conn_params.items():
                 try:
                     str(value).encode('utf-8')
-                    logger.debug(f"Verbindungsparameter '{key}' ist UTF-8-kompatibel")
+                    logger.debug(f"Connection parameter '{key}' is UTF-8 compatible")
                 except UnicodeDecodeError as ue:
-                    logger.error(f"❌ Problem im Verbindungsparameter '{key}': {ue}")
+                    logger.error(f"❌ Problem in connection parameter '{key}': {ue}")
                     raise
 
             # Datenbankverbindung aufbauen
@@ -69,32 +71,34 @@ class DatabaseManager:
             self.cur.execute("SELECT 1;")
             self.cur.fetchone()
             
-            logger.info("✅ Datenbankverbindung erfolgreich hergestellt")
+            logger.info("✅ Database connection established successfully")
             
         except psycopg2.Error as e:
-            logger.error(f"❌ PostgreSQL-Fehler: {e}")
+            logger.error(f"❌ PostgreSQL error: {e}")
             raise
         except Exception as e:
-            logger.error(f"❌ Unerwarteter Fehler bei der Datenbankverbindung: {e}")
+            logger.error(f"❌ Unexpected error during database connection: {e}")
             raise
 
     def close(self):
-        """Close database connection."""
+        """
+        Close database connection.
+        """
         if hasattr(self, 'cur'):
             self.cur.close()
         if hasattr(self, 'conn'):
             self.conn.close()
-            logger.info("Datenbankverbindung geschlossen")
+            logger.info("Database connection closed")
 
     def save_artist(self, artist_data: Dict) -> Optional[int]:
         """
-        Speichert Künstlerdaten in der Datenbank.
+        Save artist data to the database.
         
         Args:
-            artist_data (Dict): Künstlerinformationen von der MusicBrainz API
+            artist_data (Dict): Artist information from MusicBrainz API
             
         Returns:
-            Optional[int]: Künstler-ID bei Erfolg, None sonst
+            Optional[int]: Artist ID if successful, None otherwise
         """
         try:
             # UTF-8-Kompatibilität der Künstlerdaten prüfen
@@ -116,10 +120,10 @@ class DatabaseManager:
             ))
             artist_id = self.cur.fetchone()[0]
             self.conn.commit()
-            logger.info(f"Künstler gespeichert: {artist_data.get('name')}")
+            logger.info(f"Artist saved: {artist_data.get('name')}")
             return artist_id
         except Exception as e:
-            logger.error(f"Fehler beim Speichern des Künstlers: {e}")
+            logger.error(f"Error saving artist: {e}")
             self.conn.rollback()
             return None
 

@@ -21,13 +21,17 @@ class MusicBrainzAPI:
     }
 
     def __init__(self):
+        """
+        Initialize the MusicBrainz API client.
+        Creates a session for better performance with multiple requests.
+        """
         # Erstellt eine Session für bessere Performance bei mehreren Anfragen
         self.session = requests.Session()
         self.session.headers.update(self.HEADERS)
 
     def _make_request(self, endpoint: str, params: Optional[Dict] = None) -> Optional[Dict]:
         """
-        Sends a request to the MusicBrainz API with rate limiting.
+        Send a request to the MusicBrainz API with rate limiting.
         This method is used internally by all other methods.
         
         Args:
@@ -58,7 +62,7 @@ class MusicBrainzAPI:
 
     def get_artists_by_genre(self, genre: str, limit: int = 100, offset: int = 0) -> Optional[List[Dict]]:
         """
-        Retrieves artists by genre with basic information needed for database storage.
+        Retrieve artists by genre with basic information needed for database storage.
         
         Args:
             genre (str): Genre to search for
@@ -77,7 +81,7 @@ class MusicBrainzAPI:
 
     def get_artist_recordings(self, artist_id: str, limit: int = 100, offset: int = 0) -> Optional[List[Dict]]:
         """
-        Retrieves all recordings by an artist with minimal required information.
+        Retrieve all recordings by an artist with minimal required information.
         
         Args:
             artist_id (str): MusicBrainz ID of the artist
@@ -96,7 +100,7 @@ class MusicBrainzAPI:
 
     def get_genres(self, limit: int = 100, offset: int = 0) -> Optional[List[Dict]]:
         """
-        Retrieves a list of all available genres.
+        Retrieve a list of all available genres.
         
         Args:
             limit (int): Maximum number of results

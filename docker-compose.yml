@@ -8,7 +8,7 @@ services:
       - "5000:5000"
     # Volume-Mapping: Lokales src-Verzeichnis -> /app im Container
     volumes:
-      - ./src:/app
+      - ./src:/app/src
     # Abhängigkeit: Datenbank muss zuerst starten
     depends_on:
       - db
@@ -33,7 +33,7 @@ services:
       - postgres_data:/var/lib/postgresql/data             # Persistente Daten
     # Port-Mapping für direkten Datenbankzugriff
     ports:
-      - "8880:8880"
+      - "8880:5432"
     # Healthcheck: Prüft alle 5 Sekunden, ob die DB bereit ist
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
