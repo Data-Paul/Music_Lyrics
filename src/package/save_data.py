@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class DatabaseManager:
     def __init__(self, dbname: str = "music_db", user: str = "postgres", 
-                 password: str = "postgres", host: str = "localhost", port: str = "5432"):
+                 password: str = "postgres", host: str = "localhost", port: str = "8880"):
         """
         Initialize database connection.
         
@@ -282,7 +282,7 @@ if __name__ == "__main__":
         user="postgres",
         password="postgres",
         host="db", # service name from docker-compose.yml
-        port="5432"
+        port="8880"
     )
     
     # Test with a simple artist

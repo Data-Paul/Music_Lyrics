@@ -14,7 +14,7 @@ Wir haben die Datenbankverbindung erfolgreich mit einem dedizierten Test-Contain
 4. Kodierung und Abfrageausführung bestätigt
 
 ### Testergebnisse
-- Verbindung erfolgreich mit URL: `postgresql://postgres:postgres@db:5432/music_db`
+- Verbindung erfolgreich mit URL: `postgresql://postgres:postgres@db:8880/music_db`
 - Datenbankkodierung: UTF8
 - Testabfragen erfolgreich ausgeführt
 - Container-Netzwerk wie erwartet funktionsfähig

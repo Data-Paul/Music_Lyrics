@@ -1,8 +1,8 @@
 services:
-  # Web-Service für die Python-Anwendung
-  web:
+# app container für die python anwendung
+  app:
     build: .
-    container_name: music_db
+    container_name: music_app
     # Port-Mapping: Host-Port 5000 -> Container-Port 5000
     ports:
       - "5000:5000"
@@ -14,10 +14,11 @@ services:
       - db
     # Umgebungsvariablen für die Datenbankverbindung
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/music_db
+      - DATABASE_URL=postgresql://postgres:postgres@db:8880/music_db
 
   # PostgreSQL-Datenbank-Service
   db:
+    container_name: music_db
     image: postgres:15
     # Datenbank-Konfiguration über Umgebungsvariablen
     environment:
@@ -32,7 +33,7 @@ services:
       - postgres_data:/var/lib/postgresql/data             # Persistente Daten
     # Port-Mapping für direkten Datenbankzugriff
     ports:
-      - "5432:5432"
+      - "8880:8880"
     # Healthcheck: Prüft alle 5 Sekunden, ob die DB bereit ist
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -40,6 +41,19 @@ services:
       timeout: 5s
       retries: 5
 
+
 # Definition des persistenten Volumes für die Datenbank
 volumes:
   postgres_data: 
+
+
+# wir können noch einen pgadmin container hinzufügen damit wir die db besser verwalten können
+# pgadmin:
+#   image: dpage/pgadmin4
+#   ports:
+#     - "5050:80"
+#   environment:
+#     PGADMIN_DEFAULT_EMAIL: "pgadmin@example.com"
+#     PGADMIN_DEFAULT_PASSWORD: "pgadmin"
+#   depends_on:
+#     - db # damit der pgadmin container auf die db zugreifen kann  

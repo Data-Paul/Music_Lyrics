@@ -103,7 +103,7 @@ The application will be available at `http://localhost:8000`
 The project uses PostgreSQL. The database is automatically set up when running with Docker Compose.
 
 - Host: localhost
-- Port: 5432
+- Port: 8880
 - Database: mydb
 - User: postgres
 - Password: postgres
