@@ -1,12 +1,23 @@
 """
-Module for web scraping lyrics from azlyrics.com.
-This module provides functions to fetch and process song lyrics.
+Web Scraping Module for Lyrics Collection
+
+This module provides functionality to scrape song lyrics from azlyrics.com.
+It handles URL formatting, web requests, and HTML parsing to extract lyrics
+for given artist-song combinations. The module includes:
+- URL formatting for azlyrics.com
+- Web scraping with proper headers and rate limiting
+- HTML parsing using BeautifulSoup
+- Error handling for various scraping scenarios
+
+Note: This module implements a delay between requests to respect the
+website's server and avoid being blocked.
 """
 # Webscraping -> https://www.azlyrics.com/lyrics/
 # Ich muss das ende der URL so designen:
 # "artist/song-name.html" zb. "metallica/masterofpuppets.html"
 # Das heißt ich muss aus der db/API den Artist Namen und die Song Namen nehmen
 # Dann die Lyrics scrapen und alles in der Datenbank speichern
+
 import requests
 from bs4 import BeautifulSoup
 import time
@@ -17,11 +28,18 @@ def format_url(artist: str, song: str) -> str:
     Format artist and song name into the correct URL format for azlyrics.com.
     
     Args:
-        artist (str): Artist name
-        song (str): Song name
+        artist (str): Artist name to format
+        song (str): Song name to format
         
     Returns:
         str: Formatted URL for azlyrics.com
+        
+    Note:
+        The function handles special characters and spaces by:
+        - Converting to lowercase
+        - Removing special characters (except hyphens and spaces)
+        - Replacing spaces with hyphens in artist names
+        - Removing spaces in song names
     """
     # Konvertiere zu Kleinbuchstaben
     artist = artist.lower()
@@ -42,11 +60,17 @@ def scrape_lyrics(artist: str, song: str) -> str:
     Scrape lyrics from azlyrics.com for a given artist and song.
     
     Args:
-        artist (str): Artist name
-        song (str): Song name
+        artist (str): Name of the artist
+        song (str): Name of the song
         
     Returns:
         str: The lyrics of the song, or an error message if not found
+        
+    Note:
+        The function includes:
+        - Rate limiting (2-second delay between requests)
+        - User-Agent header to avoid blocking
+        - Error handling for network and parsing issues
     """
     # Formatiere die URL
     url = format_url(artist, song)
@@ -55,7 +79,7 @@ def scrape_lyrics(artist: str, song: str) -> str:
     time.sleep(2)
     
     try:
-        # Mache die Anfrage
+        # Mache die Anfrage mit einem Browser-ähnlichen User-Agent
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }

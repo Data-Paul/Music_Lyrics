@@ -1,6 +1,15 @@
 """
-Module for saving data from API and web scraping to the database.
-This module provides functions to save and manage music data in PostgreSQL.
+Database Management Module
+
+This module provides functionality for managing music data in a PostgreSQL database.
+It handles all database operations including:
+- Connection management
+- Data insertion and updates
+- Transaction handling
+- Error recovery
+
+The module uses psycopg2 for PostgreSQL interaction and implements proper
+error handling and transaction management to ensure data integrity.
 """
 
 import psycopg2
@@ -12,7 +21,7 @@ from .web_logger import scrape_lyrics
 import sys
 import json
 
-# Logging-Konfiguration
+# Konfiguriere das Logging-System
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -23,17 +32,31 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class DatabaseManager:
+    """
+    Manages database operations for the music data collection system.
+    
+    This class provides methods for:
+    - Database connection management
+    - Data insertion and updates
+    - Transaction handling
+    - Error recovery
+    
+    Attributes:
+        conn_params (dict): Database connection parameters
+        api (MusicBrainzAPI): Instance of the MusicBrainz API client
+    """
+    
     def __init__(self, dbname: str = "music_db", user: str = "postgres", 
                  password: str = "postgres", host: str = "db", port: str = "5432"):
         """
-        Initialize database connection.
+        Initialize database connection parameters.
         
         Args:
-            dbname (str): Database name
-            user (str): Database user
+            dbname (str): Name of the database
+            user (str): Database username
             password (str): Database password
-            host (str): Database host
-            port (str): Database port
+            host (str): Database host address
+            port (str): Database port number
         """
         # Verbindungsparameter für die Datenbank
         self.conn_params = {
@@ -47,48 +70,33 @@ class DatabaseManager:
         self.api = MusicBrainzAPI()
         logger.info(f"DatabaseManager initialized with parameters: {self.conn_params}")
 
-    def connect(self):
+    def connect(self) -> bool:
         """
-        Establish database connection.
+        Establish a connection to the database.
+        
+        Returns:
+            bool: True if connection is successful, False otherwise
         """
         try:
-            logger.info("Attempting to establish database connection...")
-
-            # UTF-8-Test für alle Verbindungsparameter
-            for key, value in self.conn_params.items():
-                try:
-                    str(value).encode('utf-8')
-                    logger.debug(f"Connection parameter '{key}' is UTF-8 compatible")
-                except UnicodeDecodeError as ue:
-                    logger.error(f"❌ Problem in connection parameter '{key}': {ue}")
-                    raise
-
-            # Datenbankverbindung aufbauen
             self.conn = psycopg2.connect(**self.conn_params)
             self.cur = self.conn.cursor()
-            
-            # Testabfrage zur Überprüfung der Verbindung
-            self.cur.execute("SELECT 1;")
-            self.cur.fetchone()
-            
-            logger.info("✅ Database connection established successfully")
-            
+            logger.info("Database connection established")
+            return True
         except psycopg2.Error as e:
-            logger.error(f"❌ PostgreSQL error: {e}")
-            raise
-        except Exception as e:
-            logger.error(f"❌ Unexpected error during database connection: {e}")
-            raise
+            logger.error(f"Database connection failed: {e}")
+            return False
 
-    def close(self):
+    def close(self) -> None:
         """
-        Close database connection.
+        Close the database connection and cursor.
+        
+        This method ensures proper cleanup of database resources.
         """
         if hasattr(self, 'cur'):
             self.cur.close()
         if hasattr(self, 'conn'):
             self.conn.close()
-            logger.info("Database connection closed")
+        logger.info("Database connection closed")
 
     def save_artist(self, artist_data: Dict) -> Optional[int]:
         """
@@ -99,6 +107,10 @@ class DatabaseManager:
             
         Returns:
             Optional[int]: Artist ID if successful, None otherwise
+            
+        Note:
+            The function handles UTF-8 encoding issues and provides
+            detailed error logging for debugging.
         """
         try:
             # UTF-8-Kompatibilität der Künstlerdaten prüfen
@@ -248,6 +260,13 @@ class DatabaseManager:
             
         Returns:
             bool: True if successful, False otherwise
+            
+        Note:
+            This method handles the complete data processing pipeline:
+            1. Saves artist information
+            2. Saves and links genres
+            3. Fetches and saves songs
+            4. Scrapes and saves lyrics
         """
         try:
             self.connect()
