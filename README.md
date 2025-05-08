@@ -190,7 +190,7 @@ Log levels:
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 
-##Future AI Integration: Concept and Use Cases
+## Future AI Integration: Concept and Use Cases
 
 While the current application focuses on collecting and storing music-related data, future versions are designed to enable powerful AI-driven analysis of lyrical content. The structured storage of artist, song, genre and lyrics data lays the foundation for multiple machine learning and NLP applications.
 ### 🎯 Planned AI Use Cases
@@ -215,6 +215,7 @@ Using the last_updated timestamps or song release dates (extendable via MusicBra
 4. Clustering and Exploratory Search
 
 Unsupervised clustering (e.g., K-Means or HDBSCAN) on lyric embeddings can allow for discovery of hidden patterns and novel groupings of songs or artists based on language use.
+
 5. Custom Search & Recommendation Engine
 
 A lyric-based search and recommendation system could suggest songs with similar themes, moods, or writing styles — useful for music discovery or playlist generation.
